@@ -1,0 +1,96 @@
+.boards-page
+  background alpha($main-bg, .3)
+  min-height 100vh
+  height 100%
+  padding 50px
+
+.boards-container
+  display flex
+  align-content flex-start
+  flex-wrap wrap
+
+  .board-item
+    width 250px
+    padding 10px
+
+    &:hover
+      cursor pointer
+      .body
+        background $board-bg
+
+      .controls
+        bottom 0
+
+    .body
+      border-radius 5px
+      width 100%
+      min-height 150px
+      background alpha($board-bg, .8)
+      padding 20px 10px
+      transition $fast
+      overflow hidden
+      position relative
+
+    .board-title
+      text-align center
+
+    .controls
+      padding 10px
+      position absolute
+      bottom -100%
+      left 0
+      right 0
+      display flex
+      transition $fast
+
+      > *
+        flex-grow 1
+        flex-basis 10px
+        display block
+
+.single-board
+  background alpha($main-bg, .3)
+  min-height 100vh
+  padding 15px
+
+  .border-head
+    padding-bottom 30px
+
+  .column-list
+    display flex
+    align-items flex-start
+
+  .column-item
+    padding 10px
+
+  .column-container
+    padding 10px
+    width 250px
+    border-radius 3px
+    background $column-bg
+
+    .trans-input
+      font-size 16px
+      font-weight 600
+      line-height 20px
+      margin-top 3px
+      margin-bottom 1px
+
+
+  .task-list
+    padding 0
+
+  .task-preview
+    padding 3px
+    background #fff
+    transition $fast
+
+    &:hover
+      cursor pointer
+      background alpha(#232323, .1)
+
+    .title
+      padding-bottom 15px
+
+    .description
+      max-height 40px

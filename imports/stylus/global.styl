@@ -1,0 +1,135 @@
+html,body                       { width:100%; height:100%;}
+body                            { padding:0; margin:0; font:14px arial; line-height: 1.5; background: #fff;}
+div,p,a,span,em,strong,img,h1,h2,h3,h4,h5,h6,ul,ol,li,dl,dt,dd,table,td,tr,form,fieldset,label,select,input,textarea,header, nav, section, article, aside, footer, blockquote {
+  padding:0;
+  margin:0;
+  outline:none;
+  list-style:none;
+
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+header, nav, section, article, aside, footer {
+  display: block
+}
+select, input, textarea        {  font:italic 16px arial; color: #e5e5e5; vertical-align:middle; }
+textarea                       { vertical-align:top; resize:none;}
+:focus                         { outline:none; }
+input[type=submit], button     { cursor:pointer; }
+img, fieldset                  { border:0; }
+table                          { border-collapse:collapse; border-spacing:0; }
+a                              { font: 12px arial; color: #58595b; text-decoration:none; }
+a:hover                        { text-decoration:none; }
+
+*
+  box-sizing border-box
+  margin 0
+  padding 0
+
+html, body
+  font-size: 16px;
+  color #232323
+  font-family 'Roboto', sans-serif
+
+#react-root
+  width 100%
+  height 100%
+#app
+  overflow hidden
+  width 100%
+  height 100%
+
+.content
+  padding-top $headerHeight
+  min-height 100%
+.flex-wrap
+  display flex
+  justify-content center
+  align-items center
+
+.trans-input
+  border none
+  background transparent
+  font-size 14px
+  font-style normal
+  color #232323
+  display block
+
+input[type="text"].default
+  display block
+  height 35px
+  background #fff
+  border none
+  border-radius 3px
+  padding 0 15px
+  color #232323
+  font-style normal
+  width 100%
+  transition $fast
+
+  &:hover,
+  &:focus
+    box-shadow 0 0 5px 2px alpha($main-bg, .3)
+
+.main-btn,
+.cancel-btn
+  display inline-block
+  height 35px
+  line-height 35px
+  font-size 20px
+  padding 0 15px
+  border none
+  transition $fast
+  border-radius 3px
+
+  &:hover
+    cursor pointer
+
+.main-btn
+  background alpha($main-bg, .7)
+  color #fff
+  &:hover
+    background $main-bg
+.cancel-btn
+  background alpha(#ec2929, .7)
+  color #fff
+  &:hover
+    background #ec2929
+
+
+@keyframes show{
+  0%{
+    opacity 0
+    margin-top 60px
+  }
+  100%{
+    opacity 1
+    margin-top 0
+  }
+}
+@keyframes hide{
+  0%{
+    opacity 1
+    margin-top 0
+  }
+  100%{
+    opacity 0
+    margin-top 60px
+  }
+}
+@keyframes opacity{
+  0%{
+    opacity 0
+  }
+  100%{
+    opacity 1
+  }
+}
+@keyframes opacityOff{
+  0%{
+    opacity 1
+  }
+  100%{
+    opacity 0
+  }
+}
