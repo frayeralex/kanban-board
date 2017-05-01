@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-// import Task from '/imports/ui/components/Task';
 import Task from '/imports/api/composer/components/Task';
 
 class TaskPreview extends Component{

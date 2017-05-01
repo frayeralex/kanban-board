@@ -143,6 +143,37 @@ class Column extends Component {
         )
     }
 
+    renderInfo(){
+        const { tasks } = this.props;
+        let checkListStatus = null;
+        let taskNumber = null;
+        if(tasks && tasks.length > 0){
+            taskNumber = <p>Task count: {tasks.length}</p>;
+            const status = tasks
+                .reduce((chekclists, item)=>{
+                    if(item.checkList && item.checkList.length) {
+                        chekclists = chekclists.concat(item.checkList);
+                    }
+                    return chekclists;
+                },[])
+                .reduce((result,arr)=>{
+                    arr.items.forEach(task=>{
+                        if(task.done) result.done += 1;
+                        result.all +=1;
+                    });
+                    return result;
+                },{done: 0, all: 0});
+            if(status.all) checkListStatus = <p>{`Progress ${status.done}/${status.all}`}</p>;
+        }
+
+        return (
+            <div className="column-info">
+                {taskNumber}
+                {checkListStatus}
+            </div>
+        );
+    }
+
     render(){
         const { item } = this.props;
         const { editName } = this.state;
@@ -167,6 +198,7 @@ class Column extends Component {
                  onDragEnter={this.dragEnterColumn.bind(this)}
             >
                 {nameBlock}
+                {this.renderInfo()}
                 {this.renderTaskList()}
             </div>
         )

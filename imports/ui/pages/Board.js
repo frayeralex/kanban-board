@@ -45,10 +45,6 @@ class Board extends Component {
     dragEnd(dropElement){
         const { dropTarget, columnDropEnd } = this.state;
 
-        console.log("dropElement", dropElement)
-        console.log("dropTarget", dropTarget)
-        console.log("columnDropEnd", columnDropEnd)
-
         const updateCb = (err)=> {
             if(err) return console.error(err);
             this.setState({

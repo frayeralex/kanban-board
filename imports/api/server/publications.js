@@ -26,6 +26,7 @@ Meteor.startup(()=>{
             collection.Tasks.find({
                 boardId: _id,
             }),
+            collection.Files.find(),
             Meteor.users.find({_id: {$in: members}},
                 {fields: {username: 1}}),
         ]

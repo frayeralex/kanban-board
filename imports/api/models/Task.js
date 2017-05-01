@@ -24,6 +24,18 @@ const TaskSchema = new SimpleSchema({
     'members.$': {
         type: String,
     },
+    timeDue: {
+        type: Date,
+        optional: true,
+    },
+    attachments: {
+        type: Array,
+        defaultValue: [],
+    },
+    "attachments.$":{
+        type: Object,
+        blackbox: true,
+    },
     checkList: {
         type: Array,
         defaultValue: [],

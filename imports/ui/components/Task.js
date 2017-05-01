@@ -4,138 +4,14 @@ import Textarea from 'better-react-textarea-autosize';
 import Select from 'react-select';
 import moment from 'moment';
 import classNames from 'classnames';
-
-class Comment extends Component {
-    constructor(props){
-        super(props);
-
-        this.state = {
-            editMode: false
-        }
-    }
-
-    componentDidMount(){
-        this.updateTimer();
-    }
-
-    componentWillUnmount(){
-        clearTimeout(this.updaterId);
-    }
-
-    updateTimer(){
-        const { item } = this.props;
-
-        this.minutesAgo = moment().diff(moment(item.createdAt), 'minutes');
-        if (this.minutesAgo === 0){
-            this.updaterId = setTimeout(()=>{
-                this.forceUpdate();
-                this.updateTimer();
-            },1000 * 10);
-        }else if(this.minutesAgo < 60){
-            this.updaterId = setTimeout(()=>{
-                this.forceUpdate();
-                this.updateTimer();
-            },1000 * 60);
-        }else {
-            this.updaterId = setTimeout(()=>{
-                this.forceUpdate();
-                this.updateTimer();
-            },1000 * 60 * 60);
-        }
-    }
-
-
-    renderControls(){
-        const { item } = this.props;
-
-        const removeComment = ()=>{
-            Meteor.call('removeComment', item._id)
-        };
-
-        if(Meteor.userId() === item.createdBy){
-            return(
-                <div className="controls">
-                    <button className="main-btn"
-                            onClick={()=>this.setState({editMode: true})}>Edit</button>
-                    <button className="cancel-btn"
-                            onClick={removeComment}>Remove</button>
-                </div>
-            )
-        }else{
-            return(
-                <div className="controls">
-                    <button className="main-btn">Replay</button>
-                </div>
-            )
-        }
-    }
-
-    updateComment(event){
-        event.preventDefault();
-
-        const { _id } = this.props.item;
-        const text = this.comment.value;
-
-        if(!text) return console.error("Comment must be not empty!");
-
-        const data = {
-            text,
-        };
-
-        Meteor.call('updateComment', _id, data, err=>{
-            if(err) return console.error(err);
-            this.setState({editMode: false});
-        })
-    }
-
-    render(){
-        const { item, memberStore } = this.props;
-        const { editMode } = this.state;
-        const author = memberStore[item.createdBy].username;
-        const dateTime = this.minutesAgo > 60 * 24 ? moment(item.createdAt).format("dddd, MMMM Do YYYY, h:mm:ss a") : moment(item.createdAt).fromNow();
-
-        if(editMode){
-            return(
-                <form onSubmit={this.updateComment.bind(this)}
-                      className="comment-form" >
-                        <Textarea
-                            style={{boxSizing: 'border-box'}}
-                            minRows={3}
-                            maxRows={6}
-                            defaultValue={item.text}
-                            inputRef={ref=>this.comment=ref}
-                        />
-                    <div className="controls">
-                        <button type="submit"
-                                className="main-btn">Update comment</button>
-                        <button type="button"
-                                onClick={()=>this.setState({editMode: false})}
-                                className="cancel-btn">Cancel</button>
-                    </div>
-                </form>
-            )
-        }
-
-        return(
-            <div className="comment-item">
-                <div className="meta-data">
-                    <div className="info">
-                        <span className="author">Author: {author}</span>
-                        <span className="time"> Posted: {dateTime}</span>
-                    </div>
-                    {this.renderControls()}
-                </div>
-                <pre className="comment-text">
-                    <span>{item.text}</span>
-                </pre>
-            </div>
-        )
-    }
-}
+import DatePicker from 'react-datepicker';
+import { Files } from '/imports/api/lib/collections';
+import Comment from '/imports/ui/components/Comment';
 
 class Task extends Component {
     constructor(props){
         super(props);
+        const { item } = props;
 
         this.memberOptions =  props.members.map(member=>{
             return {
@@ -153,9 +29,12 @@ class Task extends Component {
             editTitle: false,
             editDescription: false,
             editMembers: false,
-            selectMembers: props.item.members ? this.memberOptions.filter(m=>props.item.members.find(e=>e===m.value)) : [],
+            selectMembers: item.members ? this.memberOptions.filter(m=>item.members.find(e=>e===m.value)) : [],
             addCheckList: false,
             editCheckList: null,
+            editTimeDue: false,
+            timeDue: item.timeDue ? moment(item.timeDue) : null,
+            addAttachment: false
         };
 
         this.inputs = [];
@@ -168,17 +47,6 @@ class Task extends Component {
 
     renderTitle(item){
         const { editTitle } = this.state;
-        let checkListStatus = '';
-        if(item.checkList && item.checkList.length > 0){
-            const status = item.checkList.reduce((result,arr)=>{
-                arr.items.forEach(task=>{
-                    if(task.done) result.done += 1;
-                    result.all +=1;
-                });
-                return result;
-            },{done: 0, all: 0});
-            checkListStatus = `${status.done}/${status.all}`
-        }
 
         if(editTitle){
             return (
@@ -197,7 +65,7 @@ class Task extends Component {
         return (
             <h2 className="task-title"
                 onClick={()=>this.setState({editTitle: true})}
-            >{item.name} {checkListStatus}</h2>
+            >{item.name}</h2>
         )
     }
 
@@ -580,7 +448,7 @@ class Task extends Component {
             })
         };
         return(
-            <div>
+            <section>
                 <h5 className="section-title">Comments :</h5>
                 <form onSubmit={addComment} className="comment-form" >
                         <Textarea
@@ -594,7 +462,7 @@ class Task extends Component {
                                 className="main-btn">Add comment</button>
                     </div>
                 </form>
-            </div>
+            </section>
         )
     }
 
@@ -613,7 +481,170 @@ class Task extends Component {
                 {list}
             </ul>
         )
+    }
 
+    renderTimeDue(item){
+        const { editTimeDue, timeDue } = this.state;
+        let content;
+
+        const handleChange = timeDue=>this.setState({timeDue});
+        const setTimeDue = ()=>{
+            if(!timeDue) return console.error("Date is empty!");
+
+            Meteor.call('updateTask', item._id, { timeDue: timeDue.toDate() }, err=>{
+                if(err) return console.error(err);
+
+                this.setState({editTimeDue: false});
+            })
+        };
+
+        if(editTimeDue){
+            content = (
+                <div>
+                    <DatePicker
+                        dateFormat="DD MMM YYYY"
+                        selected={timeDue}
+                        onChange={handleChange}
+                        className="default"
+                    />
+                    <div className="controls">
+                        <button className="main-btn"
+                                onClick={setTimeDue}>Save</button>
+                        <button className="cancel-btn"
+                                onClick={()=>this.setState({editTimeDue: false, timeDue: moment(item.timeDue)})}>Cancel</button>
+                    </div>
+                </div>
+            )
+        }else{
+            if(timeDue){
+                content = (
+                    <button className="main-btn"
+                            onClick={()=>this.setState({editTimeDue: true})}
+                    >{timeDue.format("DD MMM YYYY")}</button>
+                )
+            }else{
+                content = (
+                    <span className="text-link"
+                          onClick={()=>this.setState({editTimeDue: true})}
+                    >Add time due</span>
+                )
+            }
+        }
+
+        return(
+            <section className="task-time-due">
+                <h5 className="section-title">Time due:</h5>
+                {content}
+            </section>
+        )
+    }
+
+    timeTraking(item){
+        if(!item.timeDue) return null;
+        const timeDue = moment(item.timeDue);
+
+        const dateFormat = minutes=>{
+            let lessMinutes = minutes;
+            const month = lessMinutes > 60 * 24 * 30 ? Math.floor(lessMinutes / (60 * 24 * 30)) : null;
+            if(month) lessMinutes = lessMinutes - (month * 60 * 24 * 30);
+            const days = lessMinutes > 60 * 24 ? Math.floor(lessMinutes / (60 * 24)) : null;
+            if(days) lessMinutes = lessMinutes - (days * 60 * 24);
+            const hours = lessMinutes > 60 ? Math.floor(lessMinutes / 60) : null;
+            if(hours) lessMinutes = lessMinutes - (hours * 60);
+            let time = '';
+            if(lessMinutes) time += `${lessMinutes}m `;
+            if(hours) time += `${hours}h `;
+            if(days) time += `${days}d `;
+            if(month) time += `${month}m`;
+
+            return time;
+        };
+
+        const timeEstimated = timeDue.diff(moment(item.createdAt), 'minutes');
+        const timeRemain = timeDue.diff(moment(), 'minutes');
+        const timeSpend = moment().diff(moment(item.createdAt), 'minutes');
+
+        return (
+            <section>
+                <h5 className="section-title">Time tracking:</h5>
+                <p>Estimated time: {dateFormat(timeEstimated)}</p>
+                <p>Remain time: {dateFormat(timeRemain)}</p>
+                <p>Spaned time: {dateFormat(timeSpend)}</p>
+            </section>
+        )
+    }
+
+    renderAttachments(item){
+        const { attachments } = item;
+        const { addAttachment } = this.state;
+
+        const addAttach = ()=>{
+            const file = this.fileInput.files[0] ? new FS.File(this.fileInput.files[0]) : null;
+            if(file){
+                Files.insert(file, (err,res)=>{
+                    if(err) return console.err(err);
+                    let files = [res];
+                    if(attachments && attachments.length > 0){
+                        files = files.concat(attachments);
+                    }
+                    const data = {
+                        attachments: files
+                    };
+
+                    Meteor.call('updateTask', item._id, data, err=>{
+                        if(err) return console.error(err);
+                        this.setState({addAttachment: false});
+                    })
+                })
+            }
+        };
+
+        let content;
+        if(addAttachment){
+            content = (
+                <div>
+                    <input type="file" ref={ref=>this.fileInput = ref}/>
+                    <div className="controls">
+                        <button className="main-btn"
+                                onClick={addAttach}>Add file</button>
+                        <button className="cancel-btn"
+                                onClick={()=>this.setState({addAttachment: false})}>Cancel</button>
+                    </div>
+                </div>
+            )
+        }else {
+            if(attachments && attachments.length > 0){
+                content = attachments.map(item=>{
+                    return (
+                        <div key={item._id}>
+                            <a download={item.name()}
+                               href={item.url()}
+                               className="text-link">{item.name()}</a>
+                        </div>
+                    )
+                });
+                content.push(
+                    <div key="special-attach-key">
+                        <span className="text-link"
+                              onClick={()=>this.setState({addAttachment: true})}
+                        >Add attachment...</span>
+                    </div>
+                );
+            }else {
+                content = (
+                    <span className="text-link"
+                          onClick={()=>this.setState({addAttachment: true})}
+                    >No attachments, click to add...</span>
+                )
+            }
+        }
+
+        return(
+            <section>
+                <h5 className="section-title">Attachments:</h5>
+                {content}
+            </section>
+        )
     }
 
     render(){
@@ -623,15 +654,14 @@ class Task extends Component {
                 <div className="logo"></div>
                 <div className="content">
                     {this.renderTitle(item)}
+                    {this.renderTimeDue(item)}
+                    {this.timeTraking(item)}
                     {this.renderDescription(item)}
+                    {this.renderAttachments(item)}
                     {this.renderMembers(item)}
                     {this.renderCheckList(item)}
                     {this.renderCommentsForm(item)}
                     {this.renderComments()}
-                    <p>Attachments: </p>
-
-                    <p>time due: </p>
-                    <p>time left: </p>
                 </div>
             </div>
         )

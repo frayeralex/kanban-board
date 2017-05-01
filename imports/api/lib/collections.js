@@ -15,3 +15,26 @@ Tasks.attachSchema(TaskSchema);
 
 export const Comments = new Mongo.Collection('Comments');
 Comments.attachSchema(CommentsSchema);
+
+const fileStore = new FS.Store.GridFS("files");
+
+export const Files = new FS.Collection("files", {
+    stores: [fileStore]
+});
+
+//edit if need custom rules for Files collection
+Files.allow({
+    insert: function(){
+        return true;
+    },
+    update: function(){
+        return true;
+    },
+    remove: function(){
+        return true;
+    },
+    download: function(){
+        return true;
+    }
+});
+
