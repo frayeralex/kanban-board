@@ -1,5 +1,5 @@
 {
-  "name": "hello",
+  "name": "Kanban board",
   "private": true,
   "scripts": {
     "start": "meteor run"
