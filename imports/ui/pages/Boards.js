@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import PropTypes from 'prop-types';
+import Textarea from 'better-react-textarea-autosize';
 
 class Board extends Component {
     constructor(){
@@ -45,14 +46,16 @@ class Board extends Component {
 
         if(editState){
             return(
-                <div className="body">
+                <div className="board-preview">
                     <form onSubmit={this.updateBoard.bind(this)}>
                         <input type="text"
+                               autoFocus={true}
+                               className="default"
                                ref={ref=>this.name = ref}
                                defaultValue={item.name}
                         />
-                        <textarea
-                            ref={ref=>this.description = ref}
+                        <Textarea
+                            inputRef={ref=>this.description = ref}
                             defaultValue={item.description}/>
                     </form>
                     <div className="controls">
@@ -68,7 +71,7 @@ class Board extends Component {
         }
 
         return (
-            <div className="body">
+            <div className="board-preview">
                 <h3 className="board-title">{item.name}</h3>
                 <p>{item.description}</p>
                 <div className="controls">

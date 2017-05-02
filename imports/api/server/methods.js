@@ -32,6 +32,13 @@ Meteor.methods({
         collections.Columns.update(id, {$set: data});
     },
 
+    removeColumn(id){
+        collections.Tasks.find({columnId: id})
+            .fetch()
+            .forEach(task=>Meteor.call('removeTask', task._id));
+        collections.Columns.remove(id);
+    },
+
     /* Task actions */
     createTask(data){
         data.createdBy = this.userId;
@@ -105,8 +112,13 @@ Meteor.methods({
         });
         collections.Tasks.update(task._id, {$set: {
             order: targetOrder,
-            columnId: target.columnId
+            columnId: target.columnId,
         }});
+    },
+
+    removeTask(id){
+        collections.Columns.remove({taskId: id});
+        return collections.Tasks.remove(id);
     },
 
     /* Comment actions *///
@@ -123,6 +135,12 @@ Meteor.methods({
 
     removeComment(id){
 
-        collections.Comments.remove(id);
+        return collections.Comments.remove(id);
+    },
+
+    /*  Files actions*/
+
+    removeFile(id){
+        return collections.Files.remove(id);
     },
 });

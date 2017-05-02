@@ -1,5 +1,5 @@
 .task-modal
-  position absolute
+  position fixed
   z-index 10
   top 0
   left 0
@@ -272,4 +272,94 @@
     .info
       flex-grow 1
 
+  .attachment-wrap
+    display flex
+    padding 5px 0
+    justify-content center
+    align-content flex-start
+    flex-wrap wrap
+    > *
+      width 150px
+      height 150px
+      margin 5px 5px
+      overflow hidden
+      display flex
+      border-radius 3px
+      background alpha(#232323, .1)
+    a
+      width 100%
+      height 100%
+      transition $fast
+      display flex
+
+    .file-wrap
+      overflow hidden
+      position relative
+
+      .extension
+        margin auto
+        font-size 40px
+        text-transform uppercase
+
+        &.less
+          font-size 30px
+        &.little
+          font-size 20px
+
+      .remove-attached
+        position absolute
+        background  alpha(#232323,.5)
+        width 30px
+        height 30px
+        top -30px
+        right -30px
+
+        &:hover
+          background  alpha(red,.5)
+
+        &:before,
+        &:after
+          content ''
+          display block
+          width 100%
+          height 4px
+          transform-origin center
+          position absolute
+          background #fff
+          top 12px
+          left 0
+          border-radius 3px
+
+        &:before
+          transform rotate(45deg)
+        &:after
+          transform rotate(-45deg)
+
+      .file-info
+        position absolute
+        bottom 0
+        left 0
+        right 0
+        height 30px
+        overflow hidden
+        text-align center
+        display flex
+        font-size 12px
+        padding 5px 3px
+        transition $fast
+        background alpha(#232323,.5)
+        > *
+          margin auto
+          color #fff
+
+      &:hover
+        cursor pointer
+        .remove-attached
+          top 0
+          right 0
+        .file-info
+          background alpha(#232323,.7)
+          height 60px
+        > a
+          transform scale(1.2) translateY(-20px)
 

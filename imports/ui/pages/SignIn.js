@@ -34,24 +34,26 @@ export default class SignIn extends React.Component{
         return (
             <div className="sign-in">
                 <div className="form-wrap">
-                    <form className="simple-form"
-                          onSubmit={this.login.bind(this)}>
+                    <form onSubmit={this.login.bind(this)}>
                         <div className="field-wrap">
-                            <label htmlFor="pass">Username</label>
-                            <div className="input-wrap">
-                                <input ref={ref=>this.username = ref}
-                                       type="text"/>
-                            </div>
+                            <label htmlFor="username">Username</label>
+
+                            <input ref={ref=>this.username = ref}
+                                   id="username"
+                                   className="default"
+                                   type="text"/>
                         </div>
 
                         <div className="field-wrap">
                             <label htmlFor="pass">Password</label>
-                            <div className="input-wrap">
-                                <input ref={ref=>this.pass = ref}
-                                       type="password"/>
-                            </div>
+
+                            <input ref={ref=>this.pass = ref}
+                                   id="pass"
+                                   className="default"
+                                   type="password"/>
+
                         </div>
-                        <button className="btn long">Ok</button>
+                        <button className="main-btn">Ok</button>
                     </form>
                 </div>
                 <Alert stack={{limit: 1}} />

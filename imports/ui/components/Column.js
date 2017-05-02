@@ -148,7 +148,7 @@ class Column extends Component {
         let checkListStatus = null;
         let taskNumber = null;
         if(tasks && tasks.length > 0){
-            taskNumber = <p>Task count: {tasks.length}</p>;
+            taskNumber = <p>Tasks: {tasks.length}</p>;
             const status = tasks
                 .reduce((chekclists, item)=>{
                     if(item.checkList && item.checkList.length) {
@@ -163,7 +163,7 @@ class Column extends Component {
                     });
                     return result;
                 },{done: 0, all: 0});
-            if(status.all) checkListStatus = <p>{`Progress ${status.done}/${status.all}`}</p>;
+            if(status.all) checkListStatus = <p>{`Done ${status.done} from ${status.all}`}</p>;
         }
 
         return (
@@ -172,6 +172,12 @@ class Column extends Component {
                 {checkListStatus}
             </div>
         );
+    }
+
+    removeColumn(){
+        const { item } = this.props;
+
+        Meteor.call('removeColumn', item._id);
     }
 
     render(){
@@ -200,6 +206,8 @@ class Column extends Component {
                 {nameBlock}
                 {this.renderInfo()}
                 {this.renderTaskList()}
+                <span className="remove-icon"
+                      onClick={this.removeColumn.bind(this)}/>
             </div>
         )
     }

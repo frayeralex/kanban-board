@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import DatePicker from 'react-datepicker';
 import { Files } from '/imports/api/lib/collections';
 import Comment from '/imports/ui/components/Comment';
+import { dateFormat } from '/imports/api/lib/helpers';
 
 class Task extends Component {
     constructor(props){
@@ -34,7 +35,8 @@ class Task extends Component {
             editCheckList: null,
             editTimeDue: false,
             timeDue: item.timeDue ? moment(item.timeDue) : null,
-            addAttachment: false
+            addAttachment: false,
+            chooseFile: null,
         };
 
         this.inputs = [];
@@ -543,23 +545,6 @@ class Task extends Component {
         if(!item.timeDue) return null;
         const timeDue = moment(item.timeDue);
 
-        const dateFormat = minutes=>{
-            let lessMinutes = minutes;
-            const month = lessMinutes > 60 * 24 * 30 ? Math.floor(lessMinutes / (60 * 24 * 30)) : null;
-            if(month) lessMinutes = lessMinutes - (month * 60 * 24 * 30);
-            const days = lessMinutes > 60 * 24 ? Math.floor(lessMinutes / (60 * 24)) : null;
-            if(days) lessMinutes = lessMinutes - (days * 60 * 24);
-            const hours = lessMinutes > 60 ? Math.floor(lessMinutes / 60) : null;
-            if(hours) lessMinutes = lessMinutes - (hours * 60);
-            let time = '';
-            if(lessMinutes) time += `${lessMinutes}m `;
-            if(hours) time += `${hours}h `;
-            if(days) time += `${days}d `;
-            if(month) time += `${month}m`;
-
-            return time;
-        };
-
         const timeEstimated = timeDue.diff(moment(item.createdAt), 'minutes');
         const timeRemain = timeDue.diff(moment(), 'minutes');
         const timeSpend = moment().diff(moment(item.createdAt), 'minutes');
@@ -576,12 +561,11 @@ class Task extends Component {
 
     renderAttachments(item){
         const { attachments } = item;
-        const { addAttachment } = this.state;
+        const { addAttachment, chooseFile } = this.state;
 
         const addAttach = ()=>{
-            const file = this.fileInput.files[0] ? new FS.File(this.fileInput.files[0]) : null;
-            if(file){
-                Files.insert(file, (err,res)=>{
+            if(chooseFile){
+                Files.insert(chooseFile, (err,res)=>{
                     if(err) return console.err(err);
                     let files = [res];
                     if(attachments && attachments.length > 0){
@@ -593,17 +577,52 @@ class Task extends Component {
 
                     Meteor.call('updateTask', item._id, data, err=>{
                         if(err) return console.error(err);
-                        this.setState({addAttachment: false});
-                    })
+                        this.setState({addAttachment: false, chooseFile: null});
+                    });
                 })
             }
+        };
+
+        const changeInput = event=>{
+            const chooseFile = event.target.files[0];
+            if(chooseFile) this.setState({chooseFile});
+        };
+
+        const removeAttachment = index=>{
+            let removeId;
+            const filterAttachments = attachments
+                .filter((file,i)=>{
+                    if(i === index) removeId = file._id;
+                    return i !== index;
+                })
+                .map(file=>{
+                    return {
+                        "EJSON$type": 'FS.File',
+                        "EJSON$value": {
+                            EJSONcollectionName: 'files',
+                            EJSON_id: file._id,
+                        }
+                    }
+                });
+
+            const data = {
+                attachments: filterAttachments
+            };
+
+            Meteor.call('updateTask', item._id, data, err=>{
+                if(err) return console.error(err);
+                Meteor.call('removeFile', removeId);
+            });
         };
 
         let content;
         if(addAttachment){
             content = (
                 <div>
-                    <input type="file" ref={ref=>this.fileInput = ref}/>
+                    <label htmlFor="file" className="main-btn">{chooseFile ? chooseFile.name : 'Click to add file...'}</label>
+                    <input type="file"
+                           onChange={changeInput}
+                           id="file"/>
                     <div className="controls">
                         <button className="main-btn"
                                 onClick={addAttach}>Add file</button>
@@ -614,22 +633,63 @@ class Task extends Component {
             )
         }else {
             if(attachments && attachments.length > 0){
-                content = attachments.map(item=>{
+                const items = attachments.map((item,index)=>{
+                    //hack to loading img correct
+                    if(!index && !item.createdByTransform) setTimeout(()=>{this.forceUpdate()},10);
+
+                    if(item.isImage()){
+                        return (
+                            <div key={item._id}
+                                 className="file-wrap">
+                                <a href={item.url()}
+                                   style={{
+                                       background: `url("${Meteor.absoluteUrl(item.url()).replace('//cfs', '/cfs')}")`,
+                                       backgroundPosition: 'center',
+                                       backgroundSize: 'cover',
+                                   }}
+                                   download={item.name()}>
+                                </a>
+                                <div className="file-info">
+                                    <span>{item.name()}</span>
+                                </div>
+                                <span className="remove-attached"
+                                      onClick={removeAttachment.bind(this,index)}/>
+                            </div>
+                        )
+                    }
                     return (
-                        <div key={item._id}>
+                        <div key={item._id}
+                             className="file-wrap">
                             <a download={item.name()}
                                href={item.url()}
-                               className="text-link">{item.name()}</a>
+                                className="flex-wrap">
+                                <span className={classNames("extension", {
+                                    "less": (item.extension()).length > 3,
+                                    "little": (item.extension()).length > 6,
+                                })}>{item.extension()}</span>
+                            </a>
+                            <div className="file-info">
+                                <span>{item.name()}</span>
+                            </div>
+                            <span className="remove-attached"
+                                  onClick={removeAttachment.bind(this,index)}/>
                         </div>
                     )
                 });
-                content.push(
-                    <div key="special-attach-key">
-                        <span className="text-link"
-                              onClick={()=>this.setState({addAttachment: true})}
-                        >Add attachment...</span>
+
+                content = (
+                    <div>
+                        <div className="attachment-wrap">
+                            {items}
+                        </div>
+                        <div>
+                            <span className="text-link"
+                                  onClick={()=>this.setState({addAttachment: true})}
+                            >Add attachment...</span>
+                        </div>
                     </div>
-                );
+                )
+
             }else {
                 content = (
                     <span className="text-link"
