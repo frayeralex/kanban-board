@@ -1,5 +1,5 @@
 
-export const dateFormat = minutes=>{
+export const dateFormat = (minutes,format = 'm-h-d-M')=>{
     let lessMinutes = minutes;
     const month = lessMinutes > 60 * 24 * 30 ? Math.floor(lessMinutes / (60 * 24 * 30)) : null;
     if(month) lessMinutes = lessMinutes - (month * 60 * 24 * 30);
@@ -7,11 +7,12 @@ export const dateFormat = minutes=>{
     if(days) lessMinutes = lessMinutes - (days * 60 * 24);
     const hours = lessMinutes > 60 ? Math.floor(lessMinutes / 60) : null;
     if(hours) lessMinutes = lessMinutes - (hours * 60);
-    let time = '';
-    if(lessMinutes) time += `${lessMinutes}m `;
-    if(hours) time += `${hours}h `;
-    if(days) time += `${days}d `;
-    if(month) time += `${month}m`;
-
-    return time;
+    return format
+        .replace('m', ` ${lessMinutes || 'r'}m `)
+        .replace('h', ` ${hours || 'r'}h `)
+        .replace('d', ` ${days || 'r'}d `)
+        .replace('M', ` ${month || 'r'}m`)
+        .replace(/-/g, '')
+        .replace(/r[mhdM]/g, '')
+        .replace('  ', ' ');
 };

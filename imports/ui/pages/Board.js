@@ -116,7 +116,7 @@ class Board extends Component {
 
         return (
             <div className="single-board">
-                <h2 className="border-head">"{board.name}" board</h2>
+                <h2 className="border-head">{board.name}</h2>
                 {this.renderColumns()}
             </div>
         )

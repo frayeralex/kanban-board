@@ -57,7 +57,8 @@ class TaskPreview extends Component{
         )
     }
 
-    removeTask(){
+    removeTask(event){
+        event.stopPropagation();
         const { item } = this.props;
 
         Meteor.call('removeTask', item._id);
@@ -78,11 +79,9 @@ class TaskPreview extends Component{
 
         let time = null;
         let remainTime = null;
-        let estimateTime = null;
 
         if(item.timeDue){
             time = <span className="time">{moment(timeDue).format("DD MMM YYYY")}</span>;
-            // estimateTime = <span className="time">Estimate : {dateFormat(timeDue.diff(moment(item.createdAt), 'minutes'))}</span>;
             remainTime = <span className={classNames("time",{
                 "norm": timeDue.diff(moment(), 'days') >= 4,
                 "warn": timeDue.diff(moment(), 'days') < 4,
@@ -98,7 +97,6 @@ class TaskPreview extends Component{
                      draggable={true}>
                     <h4 className="title">{item.name} {status}</h4>
                     {time}
-                    {estimateTime}
                     {remainTime}
                     <span className="remove-icon"
                           onClick={this.removeTask.bind(this)}/>

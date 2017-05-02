@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import TaskPreview from '/imports/ui/components/TaskPreview';
+import { dateFormat } from '/imports/api/lib/helpers';
+import moment from 'moment';
 
 class Column extends Component {
     constructor(){
@@ -72,16 +74,11 @@ class Column extends Component {
         const { dragEnterTask } = this.props;
         dragEnterTask(data);
 
-        //style
-        event.target.style.height = '20px';
-        event.target.style.border = '1px dashed #232323';
-        event.target.style.margin = '10px 0';
+        event.target.classList.add('active');
     }
 
     dragLeaveTask(event){
-        event.target.style.height = '20px';
-        event.target.style.border = 'none';
-        event.target.style.margin = '0';
+        event.target.classList.remove('active');
     }
 
     renderTaskList(){
@@ -99,7 +96,7 @@ class Column extends Component {
             if(task.mask){
                 return (
                     <li key={`${task.mask}-${index}`}
-                        style={{height: '20px'}}
+                        className="drop-area"
                         onDragEnter={this.dragEnterTask.bind(this, task.mask)}
                         onDragLeave={this.dragLeaveTask.bind(this)}
                     />
@@ -118,11 +115,11 @@ class Column extends Component {
         if(taskList.length === 0){
             taskList.push((
                 <li key={`first-mask-area`}
-                    style={{height: '20px'}}
                     onDragEnter={this.dragEnterTask.bind(this, {
                         order: 0,
                         columnId: this.props.item._id
                     })}
+                    className="drop-area"
                     onDragLeave={this.dragLeaveTask.bind(this)}
                 />
             ))
@@ -147,10 +144,18 @@ class Column extends Component {
         const { tasks } = this.props;
         let checkListStatus = null;
         let taskNumber = null;
+        let remainMinutes = null;
+        let estimateTime = null;
         if(tasks && tasks.length > 0){
-            taskNumber = <p>Tasks: {tasks.length}</p>;
+            remainMinutes = 0;
+            estimateTime = 0;
+            taskNumber = <p>Cards: {tasks.length}</p>;
             const status = tasks
                 .reduce((chekclists, item)=>{
+                    if(item.timeDue) {
+                        remainMinutes += moment(item.timeDue).diff(moment(), 'minutes');
+                        estimateTime += moment(item.timeDue).diff(moment(item.createdAt), 'minutes');
+                    }
                     if(item.checkList && item.checkList.length) {
                         chekclists = chekclists.concat(item.checkList);
                     }
@@ -163,13 +168,17 @@ class Column extends Component {
                     });
                     return result;
                 },{done: 0, all: 0});
-            if(status.all) checkListStatus = <p>{`Done ${status.done} from ${status.all}`}</p>;
+            if(status.all) checkListStatus = <p>{`Check List progress: (${status.done}/${status.all})`}</p>;
+            estimateTime = estimateTime ? <p>Tasks estimate: {dateFormat(estimateTime, 'M-d-h')}</p> : null;
+            remainMinutes = remainMinutes ? <p>Task remain: {dateFormat(remainMinutes, 'M-d-h')}</p> : null;
         }
 
         return (
             <div className="column-info">
                 {taskNumber}
                 {checkListStatus}
+                {estimateTime}
+                {remainMinutes}
             </div>
         );
     }

@@ -9,6 +9,10 @@
   align-content flex-start
   flex-wrap wrap
 
+  .add-board
+    width 250px
+    padding 10px
+
   .board-item
     width 250px
     padding 10px
@@ -26,13 +30,17 @@
       width 100%
       min-height 150px
       background alpha($board-bg, .8)
-      padding 20px 10px
+      padding 20px 10px 50px
+      max-height 400px
       transition $fast
       overflow hidden
       position relative
 
       input.default
         margin-bottom 5px
+
+      .board-info
+        font-size 12px
 
       textarea
         fmax-height 250px
@@ -65,10 +73,13 @@
 .single-board
   background alpha($main-bg, .3)
   min-height 100vh
-  padding 15px
 
   .border-head
-    padding-bottom 30px
+    padding 10px 0
+    text-align center
+    font-size 25px
+    color $main-bg
+    font-weight 700
 
   .column-list
     display flex
@@ -83,6 +94,29 @@
     border-radius 3px
     background $column-bg
     position relative
+
+    .drop-area
+      height 20px
+      border-radius 3px
+      transition height $fast
+
+      &.active
+        height 60px
+        background #fff
+        margin 10px 0
+
+    &:hover
+      > .remove-icon
+        opacity .3
+
+        &:hover
+          opacity .8
+
+    .remove-icon
+      opacity 0
+
+    .column-info
+      font-size 12px
 
     .trans-input
       font-size 16px

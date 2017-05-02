@@ -118,8 +118,8 @@ class Comment extends Component {
             <div className="comment-item">
                 <div className="meta-data">
                     <div className="info">
-                        <span className="author">Author: {author}</span>
-                        <span className="time"> Posted: {dateTime}</span>
+                        <span className="author">@{author}</span>
+                        <span className="time">{dateTime}</span>
                     </div>
                     {this.renderControls()}
                 </div>
