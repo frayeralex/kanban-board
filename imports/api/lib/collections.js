@@ -16,7 +16,7 @@ Tasks.attachSchema(TaskSchema);
 export const Comments = new Mongo.Collection('Comments');
 Comments.attachSchema(CommentsSchema);
 
-const fileStore = new FS.Store.GridFS("files");
+const fileStore = new FS.Store.FileSystem("files");
 
 export const Files = new FS.Collection("files", {
     stores: [fileStore]
