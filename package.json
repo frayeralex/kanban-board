@@ -10,7 +10,7 @@
     "better-react-textarea-autosize": "^4.0.8",
     "classnames": "^2.2.5",
     "create-react-class": "^15.5.2",
-    "meteor-node-stubs": "~0.2.0",
+    "meteor-node-stubs": "~1.2.8",
     "moment": "^2.18.1",
     "prop-types": "^15.5.8",
     "react": "^15.5.4",
